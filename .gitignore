@@ -1,0 +1,23 @@
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS生成ファイル
+.DS_Store
+Thumbs.db
+
+# ログファイル
+*.log
+
+# バックアップファイル
+*.bak
+*.backup
+
+# 一時ファイル
+*.tmp
+*.temp
+
+# AI
+.claude
