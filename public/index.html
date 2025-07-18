@@ -1,0 +1,3111 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ashikake MD（あしかけ MD）</title>
+    
+    <!-- セキュリティヘッダー -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:;">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=()">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&family=Source+Code+Pro:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <!-- CDN ライブラリ -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-family);
+            background: #f8f9fa;
+            color: #1d1d1f;
+            line-height: var(--line-height);
+            min-height: 100vh;
+        }
+        
+        :root {
+            --font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-mono: 'Source Code Pro', 'Monaco', 'Menlo', monospace;
+            --h1-font-size: 24px;
+            --h2-font-size: 19px;
+            --h3-font-size: 18px;
+            --line-height: 1.7;
+            --h2-margin-top: 0.5rem;
+            --h2-margin-bottom: 0.1rem;
+            --li-margin-bottom: 0.1rem;
+        }
+        
+        #app {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            padding: 1.5rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 2.5rem;
+        }
+        
+        h1 {
+            font-size: 1.5rem;
+            color: #1d1d1f;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+        
+        .app-subtitle {
+            font-size: 0.875rem;
+            color: #86868b;
+            font-weight: 400;
+            margin-left: 0.5rem;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .toolbar-container {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            padding: 1rem 3rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .editor-toolbar {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .toolbar-row {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+        
+        .toolbar-row:last-child {
+            justify-content: flex-end;
+        }
+        
+        .file-controls {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .editor-controls {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            justify-content: flex-end;
+            width: 100%;
+        }
+        
+        
+        button {
+            padding: 0.5rem 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            color: #1d1d1f;
+        }
+        
+        #clearBtn {
+            background: #ff3b30;
+            color: white;
+            border-color: #ff3b30;
+        }
+        
+        #clearBtn:hover {
+            background: #d70015;
+            border-color: #d70015;
+        }
+        
+        #printBtn {
+            background: #007aff;
+            color: white;
+            border-color: #007aff;
+        }
+        
+        #printBtn:hover {
+            background: #0051d5;
+            border-color: #0051d5;
+        }
+        
+        
+        #settingsBtn {
+            background: #8e8e93;
+            color: white;
+            border-color: #8e8e93;
+        }
+        
+        #settingsBtn:hover {
+            background: #636366;
+            border-color: #636366;
+        }
+        
+        #pageBreakBtn {
+            background: #34c759;
+            color: white;
+            border-color: #34c759;
+        }
+        
+        #pageBreakBtn:hover {
+            background: #248a3d;
+            border-color: #248a3d;
+        }
+        
+        #saveStatus {
+            font-size: 0.875rem;
+            color: #86868b;
+            font-weight: 500;
+            background: rgba(245, 245, 247, 0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        
+        /* ファイルタブのスタイル */
+        .file-tabs {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            min-width: 0;
+            background: rgba(245, 245, 247, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            width: 100%;
+        }
+        
+        .tab-container {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            overflow-y: hidden;
+            flex: 1;
+            min-width: 0;
+            padding: 0.25rem 0;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 10px;
+            padding: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        
+        .tab-container::-webkit-scrollbar {
+            height: 4px;
+        }
+        
+        .tab-container::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 2px;
+        }
+        
+        .tab-container::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 2px;
+        }
+        
+        .file-tab {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(245, 245, 247, 0.8);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            color: #1d1d1f;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            min-width: 0;
+            max-width: 200px;
+            position: relative;
+        }
+        
+        .file-tab::after {
+            content: "ダブルクリックで名前変更";
+            position: absolute;
+            bottom: -2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f2937;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            z-index: 10;
+        }
+        
+        .file-tab:hover::after {
+            opacity: 1;
+        }
+        
+        .file-tab:hover {
+            background: rgba(232, 232, 237, 0.9);
+            border-color: rgba(196, 196, 199, 0.6);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .file-tab.active {
+            background: rgba(0, 122, 255, 0.9);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-color: rgba(0, 122, 255, 0.8);
+            color: #ffffff;
+            box-shadow: 0 4px 16px rgba(0, 122, 255, 0.3);
+        }
+        
+        .tab-name {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .tab-name.editing {
+            background: white;
+            color: #374151;
+            border: 1px solid #3b82f6;
+            border-radius: 4px;
+            padding: 0.125rem 0.25rem;
+            min-width: 80px;
+        }
+        
+        .tab-close {
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0;
+            margin: 0;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        
+        .tab-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .file-tab.active .tab-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        #newFileBtn,
+        #newFileBtn2 {
+            background: #007aff;
+            color: white;
+            border: 1px solid #007aff;
+            border-radius: 6px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            min-width: 0;
+        }
+        
+        #newFileBtn:hover,
+        #newFileBtn2:hover {
+            background: #0051d5;
+            border-color: #0051d5;
+        }
+        
+        #openFileBtn {
+            background: #6366f1;
+            color: white;
+        }
+        
+        #openFileBtn:hover {
+            background: #4f46e5;
+            transform: translateY(-1px);
+        }
+        
+        #saveFileBtn {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        #saveFileBtn:hover {
+            background: #d97706;
+            transform: translateY(-1px);
+        }
+        
+        #exportFileBtn {
+            background: #8b5cf6;
+            color: white;
+        }
+        
+        #exportFileBtn:hover {
+            background: #7c3aed;
+            transform: translateY(-1px);
+        }
+        
+        footer {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            padding: 1rem 3rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .footer-content p {
+            margin: 0;
+            font-size: 0.875rem;
+            color: #86868b;
+        }
+        
+        .editor-container {
+            flex: 1;
+            display: flex;
+            gap: 1.5rem;
+            padding: 2rem 3rem;
+            min-height: 0;
+        }
+        
+        .editor-panel,
+        .preview-panel {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px) saturate(180%);
+            -webkit-backdrop-filter: blur(10px) saturate(180%);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .panel-header {
+            background: #f8fafc;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .panel-title h2 {
+            background: rgba(245, 245, 247, 0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            color: #1d1d1f;
+            padding: 0.75rem 1.5rem;
+            margin: 0;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        #markdownEditor {
+            flex: 1;
+            border: none;
+            padding: 1.5rem;
+            font-family: var(--font-mono);
+            font-size: 14px;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            color: #1d1d1f;
+        }
+        
+        #markdownEditor::placeholder {
+            color: #86868b;
+        }
+        
+        #previewContent {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            color: #1d1d1f;
+        }
+        
+        /* マークダウンプレビューのスタイル */
+        #previewContent h1 {
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.5rem;
+            color: #1f2937;
+            font-weight: 700;
+            font-size: var(--h1-font-size);
+        }
+        
+        #previewContent h2 {
+            border-bottom: 1px solid #d1d5db;
+            padding-bottom: 0.1rem;
+            margin-top: var(--h2-margin-top);
+            margin-bottom: var(--h2-margin-bottom);
+            color: #374151;
+            font-weight: 600;
+            font-size: var(--h2-font-size);
+        }
+        
+        #previewContent h3 {
+            margin-top: 1rem;
+            margin-bottom: 0.25rem;
+            color: #374151;
+            font-weight: 600;
+            font-size: var(--h3-font-size);
+        }
+        
+        #previewContent p {
+            margin-bottom: 1.25rem;
+        }
+        
+        /* 改ページ用のスタイル */
+        .page-break {
+            page-break-before: always;
+            border-top: 2px dashed #d1d5db;
+            margin: 2rem 0;
+            padding-top: 2rem;
+            position: relative;
+        }
+        
+        .page-break::before {
+            content: "改ページ";
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            color: #9ca3af;
+            padding: 0 1rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        @media print {
+            .page-break {
+                border: none;
+                margin: 0;
+                padding: 0;
+            }
+            
+            .page-break::before {
+                display: none;
+            }
+        }
+        
+        #previewContent ul,
+        #previewContent ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        #previewContent li {
+            margin-bottom: var(--li-margin-bottom);
+        }
+        
+        #previewContent table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+        
+        #previewContent th,
+        #previewContent td {
+            border: 1px solid #ddd;
+            padding: 0.5rem;
+            text-align: left;
+        }
+        
+        #previewContent th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        #previewContent blockquote {
+            border-left: 4px solid #3b82f6;
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            background: #f8fafc;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        #previewContent code {
+            background: #f1f5f9;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-family: var(--font-mono);
+            font-size: 0.875em;
+            color: #475569;
+        }
+        
+        #previewContent pre {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e5e7eb;
+        }
+        
+        #previewContent pre code {
+            background: none;
+            padding: 0;
+        }
+        
+        .mermaid {
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+        
+        .mermaid-error {
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid #fecaca;
+        }
+        
+        /* テキスト配置スタイル */
+        .text-left {
+            text-align: left;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .text-justify {
+            text-align: justify;
+        }
+        
+        /* モバイル用のパネル切り替え */
+        .mobile-panel-switcher {
+            display: none;
+            background: rgba(245, 245, 247, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            margin: 1rem;
+        }
+        
+        .mobile-panel-switcher button {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            background: transparent;
+            color: #86868b;
+            font-weight: 500;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-panel-switcher button.active {
+            background: rgba(0, 122, 255, 0.9);
+            color: white;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        
+        /* ハンバーガーメニュー */
+        .hamburger-menu {
+            display: none;
+        }
+        
+        /* モバイル用ヘルプボタン */
+        .mobile-help-btn {
+            display: none;
+        }
+        
+        .mobile-help-btn:hover {
+            background: rgba(245, 245, 247, 0.9);
+        }
+        
+        /* デスクトップヘルプボタン */
+        .desktop-help-btn {
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            color: #007aff;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .desktop-help-btn:hover {
+            background: rgba(245, 245, 247, 0.9);
+        }
+
+        /* ヘッダー内モバイルボタン */
+        .mobile-header-buttons {
+            display: none;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .mobile-help-btn-header {
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            color: #1d1d1f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .mobile-help-btn-header:hover {
+            background: rgba(245, 245, 247, 0.9);
+        }
+        
+        .mobile-hamburger-menu {
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .mobile-hamburger-menu:hover {
+            background: rgba(245, 245, 247, 0.9);
+        }
+        
+        .mobile-hamburger-menu .hamburger-icon {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            gap: 3px;
+        }
+        
+        .mobile-hamburger-menu .hamburger-icon span {
+            width: 14px;
+            height: 2px;
+            background: #1d1d1f;
+            border-radius: 1px;
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-hamburger-menu.active .hamburger-icon span:first-child {
+            transform: rotate(45deg) translate(4px, 4px);
+        }
+        
+        .mobile-hamburger-menu.active .hamburger-icon span:nth-child(2) {
+            opacity: 0;
+        }
+        
+        .mobile-hamburger-menu.active .hamburger-icon span:last-child {
+            transform: rotate(-45deg) translate(4px, -4px);
+        }
+        
+        /* スワイプチュートリアル */
+        .swipe-tutorial {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 20000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .swipe-tutorial.show {
+            display: flex;
+        }
+        
+        .swipe-tutorial-content {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 300px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .swipe-animation {
+            position: relative;
+            height: 120px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+        
+        .swipe-panels {
+            display: flex;
+            width: 200%;
+            height: 80px;
+            animation: swipeDemo 3s ease-in-out infinite;
+        }
+        
+        .swipe-panel {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            margin: 0 4px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .editor-demo {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            color: #495057;
+        }
+        
+        .preview-demo {
+            background: #e3f2fd;
+            border: 2px solid #bbdefb;
+            color: #1976d2;
+        }
+        
+        .swipe-hand {
+            position: absolute;
+            top: 85px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: handMove 3s ease-in-out infinite;
+        }
+        
+        .hand-icon {
+            font-size: 1.5rem;
+            animation: handPoint 3s ease-in-out infinite;
+        }
+        
+        .swipe-arrow {
+            font-size: 1.2rem;
+            color: #007bff;
+            animation: arrowMove 3s ease-in-out infinite;
+        }
+        
+        .swipe-instruction {
+            color: #495057;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        @keyframes swipeDemo {
+            0%, 30% {
+                transform: translateX(0);
+            }
+            50%, 80% {
+                transform: translateX(-50%);
+            }
+            100% {
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes handMove {
+            0%, 30% {
+                transform: translateX(-50%);
+            }
+            50%, 80% {
+                transform: translateX(-150%);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+        
+        @keyframes handPoint {
+            0%, 20% {
+                transform: scale(1);
+            }
+            10% {
+                transform: scale(1.2);
+            }
+            30%, 70% {
+                transform: scale(1);
+            }
+            50%, 60% {
+                transform: scale(1.2);
+            }
+            80%, 100% {
+                transform: scale(1);
+            }
+        }
+        
+        @keyframes arrowMove {
+            0%, 30% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            40%, 70% {
+                opacity: 0.7;
+                transform: translateX(-10px);
+            }
+            80%, 100% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .hamburger-menu:hover {
+            background: rgba(245, 245, 247, 0.9);
+        }
+        
+        .hamburger-icon {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            gap: 4px;
+        }
+        
+        .hamburger-icon span {
+            width: 18px;
+            height: 2px;
+            background: #1d1d1f;
+            border-radius: 1px;
+            transition: all 0.3s ease;
+        }
+        
+        .hamburger-menu.active .hamburger-icon span:first-child {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+        
+        .hamburger-menu.active .hamburger-icon span:nth-child(2) {
+            opacity: 0;
+        }
+        
+        .hamburger-menu.active .hamburger-icon span:last-child {
+            transform: rotate(-45deg) translate(7px, -6px);
+        }
+        
+        /* ファイルメニュー */
+        .file-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        
+        .file-menu.show {
+            display: flex;
+        }
+        
+        .file-menu-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 16px;
+            margin: 2rem 1rem;
+            padding: 1.5rem;
+            max-height: 80vh;
+            overflow-y: auto;
+            flex-direction: column;
+            width: calc(100% - 2rem);
+        }
+        
+        .file-menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .file-menu-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1d1d1f;
+        }
+        
+        .file-menu-close {
+            width: 32px;
+            height: 32px;
+            background: rgba(245, 245, 247, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .file-menu-close:hover {
+            background: rgba(232, 232, 237, 0.9);
+        }
+        
+        .file-menu-new {
+            padding: 1rem;
+            background: rgba(0, 122, 255, 0.9);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .file-menu-new:hover {
+            background: rgba(0, 81, 213, 0.9);
+        }
+        
+        .file-menu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .file-menu-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(245, 245, 247, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .file-menu-item:hover {
+            background: rgba(232, 232, 237, 0.9);
+        }
+        
+        .file-menu-item.active {
+            background: rgba(0, 122, 255, 0.9);
+            color: white;
+        }
+        
+        .file-menu-item-name {
+            flex: 1;
+            font-weight: 500;
+            color: inherit;
+        }
+        
+        .file-menu-item-delete {
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 59, 48, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .file-menu-item-delete:hover {
+            background: rgba(215, 0, 21, 0.9);
+        }
+        
+        /* レスポンシブデザイン */
+        @media (max-width: 768px) {
+            .mobile-panel-switcher {
+                display: flex;
+                order: 2;
+            }
+            
+            .editor-container {
+                order: 1;
+            }
+            
+            footer {
+                order: 3;
+            }
+            
+            .hamburger-menu {
+                display: none;
+            }
+            
+            .mobile-help-btn {
+                display: none;
+            }
+            
+            .desktop-help-btn {
+                display: none;
+            }
+            
+            .mobile-header-buttons {
+                display: flex;
+            }
+            
+            .editor-container {
+                position: relative;
+                overflow: hidden;
+                padding: 1rem;
+                gap: 0;
+                margin-top: 0;
+            }
+            
+            .editor-panel,
+            .preview-panel {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                transition: transform 0.3s ease;
+                border-radius: 12px;
+                min-height: 60vh;
+            }
+            
+            .editor-panel {
+                transform: translateX(0);
+            }
+            
+            .preview-panel {
+                transform: translateX(100%);
+            }
+            
+            .editor-container.show-preview .editor-panel {
+                transform: translateX(-100%);
+            }
+            
+            .editor-container.show-preview .preview-panel {
+                transform: translateX(0);
+            }
+            
+            header {
+                padding: 1rem 1.5rem;
+            }
+            
+            footer {
+                padding: 1rem 1.5rem;
+            }
+            
+            .toolbar-container {
+                padding: 0.5rem 1rem 1rem 1rem;
+            }
+            
+            .header-left {
+                flex-direction: row;
+                align-items: center;
+                gap: 0.75rem;
+                padding-left: 0.5rem;
+            }
+            
+            h1 {
+                font-size: 1.25rem;
+            }
+            
+            
+            .editor-toolbar {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .toolbar-row {
+                justify-content: center;
+            }
+            
+            .toolbar-row:last-child {
+                justify-content: center;
+            }
+            
+            .editor-controls {
+                justify-content: center;
+                width: auto;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            
+            .file-tabs {
+                display: none;
+            }
+            
+            button {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.75rem;
+            }
+            
+            #saveStatus {
+                font-size: 0.75rem;
+                padding: 0.25rem 0.5rem;
+            }
+            
+            #markdownEditor {
+                padding: 1rem;
+                font-size: 13px;
+            }
+            
+            #previewContent {
+                padding: 1rem;
+            }
+            
+            .panel-title h2 {
+                padding: 0.5rem 1rem;
+                font-size: 0.75rem;
+            }
+        }
+        
+        /* さらに小さい画面用 */
+        @media (max-width: 480px) {
+            header, footer {
+                padding: 0.75rem 1rem;
+            }
+            
+            .toolbar-container {
+                padding: 0.25rem 0.75rem 0.75rem 0.75rem;
+            }
+            
+            h1 {
+                font-size: 1.125rem;
+            }
+            
+            .file-tab {
+                max-width: 100px;
+                font-size: 0.7rem;
+                padding: 0.2rem 0.4rem;
+            }
+            
+            button {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.7rem;
+            }
+            
+            #markdownEditor {
+                padding: 0.75rem;
+                font-size: 12px;
+            }
+            
+            #previewContent {
+                padding: 0.75rem;
+            }
+        }
+        
+        /* デスクトップ用スタイル */
+        @media (min-width: 769px) {
+            .file-tabs {
+                display: flex;
+            }
+            
+            .mobile-panel-switcher {
+                display: none;
+            }
+            
+            .desktop-help-btn {
+                display: flex;
+            }
+            
+            .mobile-header-buttons {
+                display: none;
+            }
+        }
+        
+        /* 印刷用スタイル */
+        @media print {
+            body {
+                background: white;
+            }
+            
+            #app {
+                display: block;
+            }
+            
+            header, footer, .toolbar-container {
+                display: none;
+            }
+            
+            .editor-container {
+                display: block;
+                padding: 0;
+            }
+            
+            .editor-panel {
+                display: none;
+            }
+            
+            .preview-panel {
+                box-shadow: none;
+                border-radius: 0;
+                background: white;
+                border: none;
+            }
+            
+            .panel-title {
+                display: none;
+            }
+            
+            #previewContent {
+                padding: 0;
+            }
+            
+            /* プレビューと同じスタイルを印刷時にも適用 */
+            #previewContent table {
+                border-collapse: collapse;
+            }
+            
+            #previewContent th {
+                background: #f8f9fa !important;
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            
+            #previewContent blockquote {
+                background: #f8fafc !important;
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            
+            #previewContent pre {
+                background: #f8fafc !important;
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            
+            #previewContent code {
+                background: #f1f5f9 !important;
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            
+            /* ページブレーク制御 */
+            h1, h2, h3 {
+                page-break-after: avoid;
+            }
+            
+            p, li {
+                page-break-inside: avoid;
+            }
+            
+            table {
+                page-break-inside: avoid;
+            }
+        }
+        
+        /* ヘルプモーダルのスタイル */
+        .help-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .help-modal.show {
+            display: flex;
+        }
+        
+        .help-content {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            margin: 1rem;
+        }
+        
+        .help-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 1rem;
+        }
+        
+        .help-header h2 {
+            margin: 0;
+            color: #1f2937;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .close-btn {
+            background: #f3f4f6;
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+        }
+        
+        .close-btn:hover {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        
+        .help-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .help-section h3 {
+            color: #374151;
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .help-section p {
+            color: #6b7280;
+            line-height: 1.6;
+            margin-bottom: 0.75rem;
+        }
+        
+        .help-section ul {
+            margin-left: 1.5rem;
+            color: #6b7280;
+        }
+        
+        .help-section li {
+            margin-bottom: 0.25rem;
+        }
+        
+        .help-code {
+            background: #f1f5f9;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.875rem;
+            color: #475569;
+        }
+        
+        /* 設定モーダルのスタイル */
+        .settings-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .settings-modal.show {
+            display: flex;
+        }
+        
+        .settings-content {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            margin: 1rem;
+            width: 100%;
+        }
+        
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 1rem;
+        }
+        
+        .settings-header h2 {
+            margin: 0;
+            color: #1f2937;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .setting-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .setting-group label {
+            display: block;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .setting-range {
+            width: 100%;
+            margin: 0.5rem 0;
+        }
+        
+        .range-value {
+            display: inline-block;
+            min-width: 3rem;
+            text-align: center;
+            font-size: 0.875rem;
+            color: #6b7280;
+            background: #f3f4f6;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            margin-left: 0.5rem;
+        }
+        
+        .settings-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+            justify-content: flex-end;
+        }
+        
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: none;
+            padding: 0.625rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.625rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        /* フォント選択のスタイル */
+        .font-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+        }
+        
+        .font-option {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fafbfc;
+        }
+        
+        .font-option:hover {
+            border-color: #3b82f6;
+            background: #f8faff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .font-option.selected {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .font-preview {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+            line-height: 1.4;
+        }
+        
+        .font-description {
+            font-size: 0.875rem;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <header>
+            <div class="header-left">
+                <h1>ashikake MD<span class="app-subtitle">（あしかけ MD）</span></h1>
+            </div>
+            <div class="header-right">
+                <button class="desktop-help-btn" id="desktopHelpBtn">?</button>
+                <div class="mobile-header-buttons">
+                    <button class="mobile-help-btn-header" id="mobileHelpBtnHeader">?</button>
+                    <button class="mobile-hamburger-menu" id="mobileHamburgerMenu">
+                        <div class="hamburger-icon">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <div class="toolbar-container">
+            <div class="editor-toolbar">
+                <div class="toolbar-row">
+                    <div class="file-tabs">
+                        <button id="newFileBtn" title="新規ファイル">＋</button>
+                        <div class="tab-container" id="tabContainer">
+                            <!-- ファイルタブが動的に生成される -->
+                        </div>
+                    </div>
+                </div>
+                <div class="toolbar-row">
+                    <div class="editor-controls">
+                        <button id="pageBreakBtn">改ページ挿入</button>
+                        <button id="clearBtn">クリア</button>
+                        <button id="printBtn">印刷</button>
+                        <button id="settingsBtn">設定</button>
+                        <span id="saveStatus">読み込み中...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="hamburger-menu" id="hamburgerMenu">
+            <div class="hamburger-icon">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="mobile-help-btn" id="mobileHelpBtn">?</div>
+        
+        <!-- スワイプアニメーションオーバーレイ -->
+        <div class="swipe-tutorial" id="swipeTutorial">
+            <div class="swipe-tutorial-content">
+                <div class="swipe-animation">
+                    <div class="swipe-hand">
+                        <div class="hand-icon">👆</div>
+                        <div class="swipe-arrow">←</div>
+                    </div>
+                    <div class="swipe-panels">
+                        <div class="swipe-panel editor-demo">エディター</div>
+                        <div class="swipe-panel preview-demo">プレビュー</div>
+                    </div>
+                </div>
+                <div class="swipe-instruction">
+                    <p>左右にスワイプして<br>エディターとプレビューを切り替え</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="file-menu" id="fileMenu">
+            <div class="file-menu-content">
+                <div class="file-menu-header">
+                    <div class="file-menu-title">ファイル</div>
+                    <div class="file-menu-close" id="fileMenuClose">×</div>
+                </div>
+                <button class="file-menu-new" id="mobileNewFileBtn">新規ファイル</button>
+                <div class="file-menu-list" id="fileMenuList">
+                    <!-- ファイルリストが動的に生成される -->
+                </div>
+            </div>
+        </div>
+        
+        <main class="editor-container">
+            <div class="editor-panel">
+                <div class="panel-title">
+                    <h2>マークダウンエディター</h2>
+                </div>
+                <textarea id="markdownEditor" placeholder="マークダウンでドキュメントを作成しましょう！
+
+例：
+# ドキュメントタイトル
+
+## 概要
+- 作成者: 山田太郎
+- 作成日: 2025年1月
+
+## 内容
+### セクション1
+- 項目1
+- 項目2
+
+## 表の例
+| 項目 | 内容 | 備考 |
+|------|------|------|
+| 項目A | 内容A | 備考A |
+| 項目B | 内容B | 備考B |
+
+## フローチャート例
+```mermaid
+graph TD
+    A[開始] --> B[処理1]
+    B --> C[処理2]
+    C --> D[終了]
+```"></textarea>
+            </div>
+            
+            <div class="preview-panel">
+                <div class="panel-title">
+                    <h2>プレビュー</h2>
+                </div>
+                <div id="previewContent"></div>
+            </div>
+        </main>
+        
+        <footer>
+            <div class="footer-content">
+                <p>&copy; 2025 KSS Lab. All rights reserved.</p>
+            </div>
+        </footer>
+        
+        <div class="mobile-panel-switcher">
+            <button id="showEditorBtn" class="active">エディター</button>
+            <button id="showPreviewBtn">プレビュー</button>
+        </div>
+    </div>
+    
+    <!-- ヘルプモーダル -->
+    <div id="helpModal" class="help-modal">
+        <div class="help-content">
+            <div class="help-header">
+                <h2>使い方ガイド</h2>
+                <button class="close-btn" id="closeHelpBtn">×</button>
+            </div>
+            
+            <div class="help-section">
+                <h3>基本的な使い方</h3>
+                <p>エディターにマークダウン形式でドキュメントを入力すると、プレビューがリアルタイムで表示されます。内容は自動保存されます。</p>
+                <p><strong>PC版：</strong> 左側のエディターと右側のプレビューが同時に表示されます。</p>
+                <p><strong>スマホ版：</strong> エディターの下にある「エディター」「プレビュー」ボタンで切り替えができます。</p>
+            </div>
+            
+            <div class="help-section">
+                <h3>マークダウン記法</h3>
+                <ul>
+                    <li><span class="help-code"># 見出し1</span> - 大見出し</li>
+                    <li><span class="help-code">## 見出し2</span> - 中見出し</li>
+                    <li><span class="help-code">### 見出し3</span> - 小見出し</li>
+                    <li><span class="help-code">- リスト項目</span> - 箇条書き</li>
+                    <li><span class="help-code">**太字**</span> - 太字</li>
+                    <li><span class="help-code">*斜体*</span> - 斜体</li>
+                </ul>
+            </div>
+            
+            <div class="help-section">
+                <h3>テーブル</h3>
+                <p>表を作成するには以下の形式を使用してください：</p>
+                <pre><span class="help-code">| 項目 | 内容 |
+|------|------|
+| スキル | JavaScript |
+| 経験年数 | 3年 |</span></pre>
+            </div>
+            
+            <div class="help-section">
+                <h3>HTMLタグの使用</h3>
+                <p>テキスト配置などでHTMLタグも使用できます：</p>
+                <ul>
+                    <li><span class="help-code">&lt;div class="text-center"&gt;中央揃え&lt;/div&gt;</span></li>
+                    <li><span class="help-code">&lt;div class="text-right"&gt;右揃え&lt;/div&gt;</span></li>
+                    <li><span class="help-code">&lt;div class="text-justify"&gt;両端揃え&lt;/div&gt;</span></li>
+                </ul>
+            </div>
+            
+            <div class="help-section">
+                <h3>Mermaid図表</h3>
+                <p>フローチャートやタイムラインを描画できます：</p>
+                <pre><span class="help-code">```mermaid
+timeline
+    title プロジェクト進行
+    2023-01 : 設計開始
+    2023-03 : 開発開始
+    2023-06 : リリース
+```</span></pre>
+            </div>
+            
+            <div class="help-section">
+                <h3>改ページ</h3>
+                <p>印刷時に改ページしたい箇所で「改ページ挿入」ボタンを押すか、<span class="help-code">---</span>を入力してください。</p>
+            </div>
+            
+            <div class="help-section">
+                <h3>マルチファイル機能</h3>
+                <p>複数のファイルを管理して効率的に作業できます：</p>
+                <p><strong>PC版：</strong></p>
+                <ul>
+                    <li>「＋」ボタンで新しいファイルを作成</li>
+                    <li>ファイルタブをクリックして切り替え</li>
+                    <li>ファイル名をダブルクリックで名前を変更</li>
+                    <li>×ボタンでファイルを削除</li>
+                </ul>
+                <p><strong>スマホ版：</strong></p>
+                <ul>
+                    <li>ハンバーガーメニュー（≡）からファイル一覧を表示</li>
+                    <li>「新規ファイル」ボタンで新しいファイルを作成</li>
+                    <li>ファイル名をタップして切り替え</li>
+                </ul>
+            </div>
+            
+            <div class="help-section">
+                <h3>操作方法</h3>
+                <p><strong>PC版：</strong></p>
+                <ul>
+                    <li>ヘッダー右上の「？」ボタンでヘルプを表示</li>
+                    <li>ファイルタブが上部に表示されます</li>
+                    <li>エディターとプレビューが同時に表示されます</li>
+                </ul>
+                <p><strong>スマホ版：</strong></p>
+                <ul>
+                    <li>ヘッダー右上の「？」ボタンでヘルプを表示</li>
+                    <li>ハンバーガーメニュー（≡）でファイル操作</li>
+                    <li>エディター下部のボタンで表示を切り替え</li>
+                </ul>
+            </div>
+            
+            <div class="help-section">
+                <h3>キーボードショートカット</h3>
+                <ul>
+                    <li><span class="help-code">Ctrl + S</span> - 手動保存</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 設定モーダル -->
+    <div id="settingsModal" class="settings-modal">
+        <div class="settings-content">
+            <div class="settings-header">
+                <h2>設定</h2>
+                <button class="close-btn" id="closeSettingsBtn">×</button>
+            </div>
+            
+            <div class="setting-group">
+                <label for="h1FontSize">見出し1 フォントサイズ</label>
+                <input type="range" id="h1FontSize" class="setting-range" min="18" max="32" step="1" value="24">
+                <span class="range-value" id="h1FontSizeValue">24px</span>
+            </div>
+            
+            <div class="setting-group">
+                <label for="h2FontSize">見出し2 フォントサイズ</label>
+                <input type="range" id="h2FontSize" class="setting-range" min="14" max="24" step="1" value="19">
+                <span class="range-value" id="h2FontSizeValue">19px</span>
+            </div>
+            
+            <div class="setting-group">
+                <label for="h3FontSize">見出し3 フォントサイズ</label>
+                <input type="range" id="h3FontSize" class="setting-range" min="12" max="22" step="1" value="18">
+                <span class="range-value" id="h3FontSizeValue">18px</span>
+            </div>
+            
+            <div class="setting-group">
+                <label for="lineHeight">行間</label>
+                <input type="range" id="lineHeight" class="setting-range" min="1.2" max="2.0" step="0.1" value="1.7">
+                <span class="range-value" id="lineHeightValue">1.7</span>
+            </div>
+            
+            <div class="setting-group">
+                <label for="h2MarginTop">見出し2 上余白</label>
+                <input type="range" id="h2MarginTop" class="setting-range" min="0" max="2" step="0.1" value="0.5">
+                <span class="range-value" id="h2MarginTopValue">0.5rem</span>
+            </div>
+            
+            <div class="setting-group">
+                <label for="h2MarginBottom">見出し2 下余白</label>
+                <input type="range" id="h2MarginBottom" class="setting-range" min="0" max="1" step="0.05" value="0.1">
+                <span class="range-value" id="h2MarginBottomValue">0.1rem</span>
+            </div>
+            
+            <div class="setting-group">
+                <label for="liMarginBottom">リスト項目間隔</label>
+                <input type="range" id="liMarginBottom" class="setting-range" min="0" max="0.5" step="0.05" value="0.1">
+                <span class="range-value" id="liMarginBottomValue">0.1rem</span>
+            </div>
+            
+            <div class="setting-group">
+                <label for="fontFamily">フォント</label>
+                <div class="font-options">
+                    <div class="font-option" data-font="noto-sans">
+                        <div class="font-preview" style="font-family: 'Noto Sans JP', sans-serif;">Noto Sans JP</div>
+                        <div class="font-description">日本語に最適化された読みやすいフォント</div>
+                    </div>
+                    <div class="font-option" data-font="inter">
+                        <div class="font-preview" style="font-family: 'Inter', sans-serif;">Inter</div>
+                        <div class="font-description">モダンでクリーンな欧文フォント</div>
+                    </div>
+                    <div class="font-option" data-font="system">
+                        <div class="font-preview" style="font-family: -apple-system, BlinkMacSystemFont, sans-serif;">システムフォント</div>
+                        <div class="font-description">OSデフォルトの高速フォント</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-actions">
+                <button class="btn-secondary" id="resetSettingsBtn">デフォルトに戻す</button>
+                <button class="btn-primary" id="saveSettingsBtn">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // マルチドキュメントエディターのメインクラス
+        class MultiDocumentEditor {
+            constructor() {
+                this.editor = document.getElementById('markdownEditor');
+                this.preview = document.getElementById('previewContent');
+                this.saveStatus = document.getElementById('saveStatus');
+                this.clearBtn = document.getElementById('clearBtn');
+                this.printBtn = document.getElementById('printBtn');
+                this.pageBreakBtn = document.getElementById('pageBreakBtn');
+                this.helpModal = document.getElementById('helpModal');
+                this.closeHelpBtn = document.getElementById('closeHelpBtn');
+                this.settingsBtn = document.getElementById('settingsBtn');
+                this.settingsModal = document.getElementById('settingsModal');
+                this.closeSettingsBtn = document.getElementById('closeSettingsBtn');
+                this.saveSettingsBtn = document.getElementById('saveSettingsBtn');
+                this.resetSettingsBtn = document.getElementById('resetSettingsBtn');
+                this.tabContainer = document.getElementById('tabContainer');
+                this.newFileBtn = document.getElementById('newFileBtn');
+                
+                this.currentFileId = null;
+                this.files = new Map();
+                this.fileManager = new FileManager();
+                this.settingsManager = new SettingsManager();
+                this.tabManager = new TabManager(
+                    this.tabContainer,
+                    (fileId) => this.switchToFile(fileId),
+                    (fileId) => this.deleteFile(fileId),
+                    (fileId, newName) => this.renameFile(fileId, newName)
+                );
+                this.markdownProcessor = new MarkdownProcessor();
+                this.debounceTimeout = null;
+                
+                // デフォルト設定
+                this.defaultSettings = {
+                    h1FontSize: 24,
+                    h2FontSize: 19,
+                    h3FontSize: 18,
+                    lineHeight: 1.7,
+                    h2MarginTop: 0.5,
+                    h2MarginBottom: 0.1,
+                    liMarginBottom: 0.1
+                };
+                
+                this.currentSettings = { ...this.defaultSettings };
+            }
+            
+            async init() {
+                this.loadFiles();
+                this.loadGlobalSettings();
+                this.bindEvents();
+                this.createDefaultFileIfNeeded();
+                this.switchToFirstFile();
+                this.renderTabs();
+                this.updateSaveStatus('初期化完了');
+            }
+            
+            loadFiles() {
+                const allFiles = this.fileManager.getAllFiles();
+                this.files.clear();
+                allFiles.forEach(file => {
+                    this.files.set(file.id, file);
+                });
+            }
+            
+            createDefaultFileIfNeeded() {
+                if (this.files.size === 0) {
+                    const fileId = this.fileManager.createFile('新しいドキュメント');
+                    this.loadFiles();
+                }
+            }
+            
+            switchToFirstFile() {
+                const firstFile = Array.from(this.files.values())[0];
+                if (firstFile) {
+                    this.switchToFile(firstFile.id);
+                }
+            }
+            
+            loadGlobalSettings() {
+                const savedFont = this.settingsManager.loadGlobalSetting('font-family');
+                if (savedFont) {
+                    this.changeFontFamily(savedFont);
+                }
+            }
+            
+            bindEvents() {
+                // エディターの入力イベント
+                this.editor.addEventListener('input', () => {
+                    this.debouncedUpdate();
+                    this.debouncedSave();
+                });
+                
+                // ファイル管理イベント
+                this.newFileBtn.addEventListener('click', () => {
+                    this.createNewFile();
+                });
+                
+                
+                // クリアボタン
+                this.clearBtn.addEventListener('click', () => {
+                    if (confirm('現在のファイルの内容を削除しますか？この操作は取り消せません。')) {
+                        this.editor.value = '';
+                        this.updatePreview();
+                        this.saveCurrentFile();
+                    }
+                });
+                
+                // 印刷ボタン
+                this.printBtn.addEventListener('click', () => {
+                    window.print();
+                });
+                
+                // 改ページボタン
+                this.pageBreakBtn.addEventListener('click', () => {
+                    this.insertPageBreak();
+                });
+                
+                // フォント選択（設定モーダル内）
+                this.bindFontEvents();
+                
+                // ヘルプモーダルを閉じる
+                this.closeHelpBtn.addEventListener('click', () => {
+                    this.hideHelp();
+                });
+                
+                // モーダル背景クリックで閉じる
+                this.helpModal.addEventListener('click', (e) => {
+                    if (e.target === this.helpModal) {
+                        this.hideHelp();
+                    }
+                });
+                
+                // 設定ボタン
+                this.settingsBtn.addEventListener('click', () => {
+                    this.showSettings();
+                });
+                
+                // 設定モーダルを閉じる
+                this.closeSettingsBtn.addEventListener('click', () => {
+                    this.hideSettings();
+                });
+                
+                // 設定保存
+                this.saveSettingsBtn.addEventListener('click', () => {
+                    this.saveSettings();
+                });
+                
+                // 設定リセット
+                this.resetSettingsBtn.addEventListener('click', () => {
+                    this.resetSettings();
+                });
+                
+                // 設定モーダル背景クリックで閉じる
+                this.settingsModal.addEventListener('click', (e) => {
+                    if (e.target === this.settingsModal) {
+                        this.hideSettings();
+                    }
+                });
+                
+                // 設定値のリアルタイム更新
+                this.bindSettingsEvents();
+                
+                // キーボードショートカット
+                this.editor.addEventListener('keydown', (e) => {
+                    if (e.ctrlKey && e.key === 's') {
+                        e.preventDefault();
+                        this.saveCurrentFile();
+                    }
+                });
+                
+                // ESCキーでモーダルを閉じる
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        if (this.helpModal.classList.contains('show')) {
+                            this.hideHelp();
+                        } else if (this.settingsModal.classList.contains('show')) {
+                            this.hideSettings();
+                        }
+                    }
+                });
+                
+                // モバイル用パネル切り替え
+                this.bindMobilePanelSwitcher();
+                
+                // モバイル用ヘルプボタン
+                this.bindMobileHelpBtn();
+                
+                // スワイプチュートリアル（初回のみ）
+                this.showSwipeTutorial();
+            }
+            
+            debouncedUpdate() {
+                clearTimeout(this.debounceTimeout);
+                this.debounceTimeout = setTimeout(async () => {
+                    await this.updatePreview();
+                    this.updateTabNameFromContent();
+                }, 300);
+            }
+            
+            debouncedSave() {
+                clearTimeout(this.saveTimeout);
+                this.saveTimeout = setTimeout(() => {
+                    this.saveCurrentFile();
+                }, 1000);
+            }
+            
+            async updatePreview() {
+                const markdown = this.editor.value;
+                const html = this.markdownProcessor.process(markdown);
+                this.preview.innerHTML = html;
+                
+                // Mermaidの再レンダリング
+                await this.markdownProcessor.renderMermaidDiagrams();
+            }
+            
+            createNewFile() {
+                const fileId = this.fileManager.createFile();
+                this.loadFiles();
+                this.switchToFile(fileId);
+                this.renderTabs();
+            }
+            
+            switchToFile(fileId) {
+                this.saveCurrentFile();
+                this.currentFileId = fileId;
+                this.loadFileContent(fileId);
+                this.loadFileSettings(fileId);
+                this.renderTabs();
+            }
+            
+            deleteFile(fileId) {
+                if (this.files.size <= 1) {
+                    alert('最後のファイルは削除できません。');
+                    return;
+                }
+                
+                if (confirm('このファイルを削除しますか？この操作は取り消せません。')) {
+                    this.fileManager.deleteFile(fileId);
+                    this.files.delete(fileId);
+                    
+                    if (this.currentFileId === fileId) {
+                        const remainingFiles = Array.from(this.files.keys());
+                        this.switchToFile(remainingFiles[0]);
+                    }
+                    
+                    this.renderTabs();
+                }
+            }
+            
+            renameFile(fileId, newName) {
+                this.fileManager.renameFile(fileId, newName);
+                this.loadFiles();
+                this.renderTabs();
+            }
+            
+            saveCurrentFile() {
+                if (this.currentFileId) {
+                    const content = this.editor.value;
+                    const success = this.fileManager.updateFileContent(this.currentFileId, content);
+                    if (success) {
+                        this.updateSaveStatus('自動保存済み');
+                    } else {
+                        this.updateSaveStatus('保存に失敗しました', 'error');
+                    }
+                }
+            }
+            
+            loadFileContent(fileId) {
+                const file = this.fileManager.loadFile(fileId);
+                if (file) {
+                    this.editor.value = file.content || '';
+                    this.updatePreview();
+                }
+            }
+            
+            loadFileSettings(fileId) {
+                const settings = this.settingsManager.loadFileSettings(fileId);
+                this.currentSettings = { ...this.defaultSettings, ...settings };
+                this.applySettings();
+            }
+            
+            renderTabs() {
+                const filesArray = Array.from(this.files.values());
+                this.tabManager.renderTabs(filesArray, this.currentFileId);
+            }
+            
+            updateSaveStatus(message, type = 'success') {
+                this.saveStatus.textContent = message;
+                this.saveStatus.style.color = type === 'error' ? '#ef4444' : '#10b981';
+            }
+            
+            insertPageBreak() {
+                const cursorPos = this.editor.selectionStart;
+                const text = this.editor.value;
+                const before = text.substring(0, cursorPos);
+                const after = text.substring(cursorPos);
+                
+                const pageBreakMarkdown = '\n\n---\n\n';
+                this.editor.value = before + pageBreakMarkdown + after;
+                this.editor.focus();
+                this.editor.setSelectionRange(cursorPos + pageBreakMarkdown.length, cursorPos + pageBreakMarkdown.length);
+                
+                this.updatePreview();
+                this.saveCurrentFile();
+            }
+            
+            changeFontFamily(fontFamily) {
+                const fontMap = {
+                    'noto-sans': "'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                    'inter': "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                    'system': "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+                };
+                
+                document.documentElement.style.setProperty('--font-family', fontMap[fontFamily]);
+                this.settingsManager.saveGlobalSetting('font-family', fontFamily);
+            }
+            
+            showHelp() {
+                this.helpModal.classList.add('show');
+            }
+            
+            hideHelp() {
+                this.helpModal.classList.remove('show');
+            }
+            
+            bindSettingsEvents() {
+                const settings = ['h1FontSize', 'h2FontSize', 'h3FontSize', 'lineHeight', 'h2MarginTop', 'h2MarginBottom', 'liMarginBottom'];
+                
+                settings.forEach(setting => {
+                    const element = document.getElementById(setting);
+                    const valueElement = document.getElementById(setting + 'Value');
+                    
+                    element.addEventListener('input', (e) => {
+                        const value = parseFloat(e.target.value);
+                        this.currentSettings[setting] = value;
+                        
+                        // 値表示を更新
+                        if (setting.includes('FontSize')) {
+                            valueElement.textContent = value + 'px';
+                        } else if (setting === 'lineHeight') {
+                            valueElement.textContent = value.toString();
+                        } else {
+                            valueElement.textContent = value + 'rem';
+                        }
+                        
+                        // CSSを即座に更新
+                        this.applySettings();
+                    });
+                });
+            }
+            
+            bindFontEvents() {
+                const fontOptions = document.querySelectorAll('.font-option');
+                
+                fontOptions.forEach(option => {
+                    option.addEventListener('click', () => {
+                        // 既存の選択を削除
+                        fontOptions.forEach(opt => opt.classList.remove('selected'));
+                        
+                        // 新しい選択を追加
+                        option.classList.add('selected');
+                        
+                        // フォントを変更
+                        const fontValue = option.getAttribute('data-font');
+                        this.changeFontFamily(fontValue);
+                    });
+                });
+            }
+            
+            showSettings() {
+                this.updateSettingsUI();
+                this.settingsModal.classList.add('show');
+            }
+            
+            hideSettings() {
+                this.settingsModal.classList.remove('show');
+            }
+            
+            updateSettingsUI() {
+                Object.keys(this.currentSettings).forEach(key => {
+                    const element = document.getElementById(key);
+                    const valueElement = document.getElementById(key + 'Value');
+                    
+                    if (element && valueElement) {
+                        element.value = this.currentSettings[key];
+                        
+                        if (key.includes('FontSize')) {
+                            valueElement.textContent = this.currentSettings[key] + 'px';
+                        } else if (key === 'lineHeight') {
+                            valueElement.textContent = this.currentSettings[key].toString();
+                        } else {
+                            valueElement.textContent = this.currentSettings[key] + 'rem';
+                        }
+                    }
+                });
+                
+                // フォント選択の現在値を設定
+                this.updateFontSelection();
+            }
+            
+            saveSettings() {
+                if (this.currentFileId) {
+                    this.settingsManager.saveFileSettings(this.currentFileId, this.currentSettings);
+                }
+                this.hideSettings();
+                this.updateSaveStatus('設定を保存しました');
+            }
+            
+            resetSettings() {
+                this.currentSettings = { ...this.defaultSettings };
+                this.updateSettingsUI();
+                this.applySettings();
+                // フォントもデフォルトに戻す
+                this.changeFontFamily('noto-sans');
+                this.updateFontSelection();
+            }
+            
+            updateFontSelection() {
+                const savedFont = this.settingsManager.loadGlobalSetting('font-family');
+                const currentFont = savedFont || 'noto-sans';
+                
+                // すべての選択を削除
+                document.querySelectorAll('.font-option').forEach(opt => opt.classList.remove('selected'));
+                
+                // 現在のフォントを選択状態にする
+                const currentOption = document.querySelector(`.font-option[data-font="${currentFont}"]`);
+                if (currentOption) {
+                    currentOption.classList.add('selected');
+                }
+            }
+            
+            applySettings() {
+                const root = document.documentElement;
+                
+                // CSS変数を更新
+                root.style.setProperty('--h1-font-size', this.currentSettings.h1FontSize + 'px');
+                root.style.setProperty('--h2-font-size', this.currentSettings.h2FontSize + 'px');
+                root.style.setProperty('--h3-font-size', this.currentSettings.h3FontSize + 'px');
+                root.style.setProperty('--line-height', this.currentSettings.lineHeight);
+                root.style.setProperty('--h2-margin-top', this.currentSettings.h2MarginTop + 'rem');
+                root.style.setProperty('--h2-margin-bottom', this.currentSettings.h2MarginBottom + 'rem');
+                root.style.setProperty('--li-margin-bottom', this.currentSettings.liMarginBottom + 'rem');
+            }
+            
+            updateTabNameFromContent() {
+                if (!this.currentFileId) return;
+                
+                const content = this.editor.value;
+                const firstH1Match = content.match(/^#(?!#)\s+(.+)$/m);
+                
+                let newName;
+                if (firstH1Match) {
+                    newName = firstH1Match[1].trim();
+                } else {
+                    newName = '（無題）';
+                }
+                
+                // 現在のファイル名と異なる場合のみ更新
+                const currentFile = this.files.get(this.currentFileId);
+                if (currentFile && currentFile.name !== newName) {
+                    this.fileManager.renameFile(this.currentFileId, newName);
+                    this.loadFiles();
+                    this.renderTabs();
+                }
+            }
+            
+            openFile() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.md,.txt';
+                input.onchange = (event) => {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            const content = e.target.result;
+                            const fileId = this.fileManager.createFile(file.name.replace(/\.[^/.]+$/, ''));
+                            this.fileManager.updateFileContent(fileId, content);
+                            this.loadFiles();
+                            this.switchToFile(fileId);
+                            this.renderTabs();
+                        };
+                        reader.readAsText(file);
+                    }
+                };
+                input.click();
+            }
+            
+            exportFile() {
+                if (!this.currentFileId) return;
+                
+                const file = this.fileManager.loadFile(this.currentFileId);
+                if (!file) return;
+                
+                const blob = new Blob([file.content], { type: 'text/markdown' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${file.name}.md`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+            
+            bindMobilePanelSwitcher() {
+                const showEditorBtn = document.getElementById('showEditorBtn');
+                const showPreviewBtn = document.getElementById('showPreviewBtn');
+                const editorContainer = document.querySelector('.editor-container');
+                
+                if (!showEditorBtn || !showPreviewBtn || !editorContainer) {
+                    console.log('Mobile panel switcher elements not found');
+                    return;
+                }
+                
+                showEditorBtn.addEventListener('click', () => {
+                    editorContainer.classList.remove('show-preview');
+                    showEditorBtn.classList.add('active');
+                    showPreviewBtn.classList.remove('active');
+                });
+                
+                showPreviewBtn.addEventListener('click', () => {
+                    editorContainer.classList.add('show-preview');
+                    showPreviewBtn.classList.add('active');
+                    showEditorBtn.classList.remove('active');
+                });
+                
+                // スワイプ機能
+                this.bindSwipeGestures(editorContainer);
+                
+                // ハンバーガーメニュー
+                this.bindHamburgerMenu();
+            }
+            
+            bindHamburgerMenu() {
+                const hamburgerMenu = document.getElementById('hamburgerMenu');
+                const mobileHamburgerMenu = document.getElementById('mobileHamburgerMenu');
+                const fileMenu = document.getElementById('fileMenu');
+                const fileMenuClose = document.getElementById('fileMenuClose');
+                const mobileNewFileBtn = document.getElementById('mobileNewFileBtn');
+                
+                if (!fileMenu || !fileMenuClose) {
+                    console.log('File menu elements not found');
+                    return;
+                }
+                
+                // 元のハンバーガーメニュー（フローティング）
+                if (hamburgerMenu) {
+                    hamburgerMenu.addEventListener('click', () => {
+                        fileMenu.classList.add('show');
+                        hamburgerMenu.classList.add('active');
+                        this.renderMobileFileList();
+                        this.setButtonsZIndex(0);
+                    });
+                }
+                
+                // 新しいヘッダー内ハンバーガーメニュー
+                if (mobileHamburgerMenu) {
+                    mobileHamburgerMenu.addEventListener('click', () => {
+                        fileMenu.classList.add('show');
+                        mobileHamburgerMenu.classList.add('active');
+                        this.renderMobileFileList();
+                        this.setButtonsZIndex(0);
+                    });
+                }
+                
+                fileMenuClose.addEventListener('click', () => {
+                    fileMenu.classList.remove('show');
+                    if (hamburgerMenu) hamburgerMenu.classList.remove('active');
+                    if (mobileHamburgerMenu) mobileHamburgerMenu.classList.remove('active');
+                    this.setButtonsZIndex(1001);
+                });
+                
+                // 背景クリックで閉じる
+                fileMenu.addEventListener('click', (e) => {
+                    if (e.target === fileMenu) {
+                        fileMenu.classList.remove('show');
+                        if (hamburgerMenu) hamburgerMenu.classList.remove('active');
+                        if (mobileHamburgerMenu) mobileHamburgerMenu.classList.remove('active');
+                        this.setButtonsZIndex(1001);
+                    }
+                });
+                
+                // 新規ファイル作成
+                if (mobileNewFileBtn) {
+                    mobileNewFileBtn.addEventListener('click', () => {
+                        this.createNewFile();
+                        fileMenu.classList.remove('show');
+                        if (hamburgerMenu) hamburgerMenu.classList.remove('active');
+                        if (mobileHamburgerMenu) mobileHamburgerMenu.classList.remove('active');
+                        this.setButtonsZIndex(1001);
+                    });
+                }
+            }
+            
+            renderMobileFileList() {
+                const fileMenuList = document.getElementById('fileMenuList');
+                if (!fileMenuList) return;
+                
+                fileMenuList.innerHTML = '';
+                
+                const filesArray = Array.from(this.files.values());
+                filesArray.forEach(file => {
+                    const item = document.createElement('div');
+                    item.className = `file-menu-item ${file.id === this.currentFileId ? 'active' : ''}`;
+                    
+                    const name = document.createElement('div');
+                    name.className = 'file-menu-item-name';
+                    name.textContent = file.name;
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'file-menu-item-delete';
+                    deleteBtn.textContent = '×';
+                    deleteBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.deleteFile(file.id);
+                        this.renderMobileFileList();
+                    });
+                    
+                    item.appendChild(name);
+                    if (filesArray.length > 1) {
+                        item.appendChild(deleteBtn);
+                    }
+                    
+                    item.addEventListener('click', () => {
+                        this.switchToFile(file.id);
+                        document.getElementById('fileMenu').classList.remove('show');
+                        const hamburgerMenu = document.getElementById('hamburgerMenu');
+                        const mobileHamburgerMenu = document.getElementById('mobileHamburgerMenu');
+                        if (hamburgerMenu) hamburgerMenu.classList.remove('active');
+                        if (mobileHamburgerMenu) mobileHamburgerMenu.classList.remove('active');
+                        this.setButtonsZIndex(1001);
+                    });
+                    
+                    fileMenuList.appendChild(item);
+                });
+            }
+            
+            bindMobileHelpBtn() {
+                const mobileHelpBtn = document.getElementById('mobileHelpBtn');
+                const mobileHelpBtnHeader = document.getElementById('mobileHelpBtnHeader');
+                
+                if (mobileHelpBtn) {
+                    mobileHelpBtn.addEventListener('click', () => {
+                        this.showHelp();
+                    });
+                }
+                
+                if (mobileHelpBtnHeader) {
+                    mobileHelpBtnHeader.addEventListener('click', () => {
+                        this.showHelp();
+                    });
+                }
+                
+                const desktopHelpBtn = document.getElementById('desktopHelpBtn');
+                if (desktopHelpBtn) {
+                    desktopHelpBtn.addEventListener('click', () => {
+                        this.showHelp();
+                    });
+                }
+            }
+            
+            // ファイルモーダル表示時にボタンのz-indexを制御
+            setButtonsZIndex(zIndex) {
+                const mobileHelpBtn = document.getElementById('mobileHelpBtn');
+                const hamburgerMenu = document.getElementById('hamburgerMenu');
+                const mobileHelpBtnHeader = document.getElementById('mobileHelpBtnHeader');
+                const mobileHamburgerMenu = document.getElementById('mobileHamburgerMenu');
+                
+                if (mobileHelpBtn) {
+                    mobileHelpBtn.style.zIndex = zIndex;
+                }
+                if (hamburgerMenu) {
+                    hamburgerMenu.style.zIndex = zIndex;
+                }
+                if (mobileHelpBtnHeader) {
+                    mobileHelpBtnHeader.style.zIndex = zIndex;
+                }
+                if (mobileHamburgerMenu) {
+                    mobileHamburgerMenu.style.zIndex = zIndex;
+                }
+            }
+            
+            showSwipeTutorial() {
+                // モバイルデバイスでない場合は表示しない
+                if (window.innerWidth > 768) {
+                    return;
+                }
+                
+                const swipeTutorial = document.getElementById('swipeTutorial');
+                if (!swipeTutorial) {
+                    return;
+                }
+                
+                // 少し遅らせて表示
+                setTimeout(() => {
+                    swipeTutorial.classList.add('show');
+                    
+                    // 5秒後に自動で閉じる
+                    setTimeout(() => {
+                        this.hideSwipeTutorial();
+                    }, 5000);
+                }, 1000);
+                
+                // クリックで閉じる
+                swipeTutorial.addEventListener('click', () => {
+                    this.hideSwipeTutorial();
+                });
+            }
+            
+            hideSwipeTutorial() {
+                const swipeTutorial = document.getElementById('swipeTutorial');
+                if (swipeTutorial) {
+                    swipeTutorial.classList.remove('show');
+                }
+            }
+            
+            bindSwipeGestures(container) {
+                let startX = 0;
+                let startY = 0;
+                let isScrolling = false;
+                
+                container.addEventListener('touchstart', (e) => {
+                    startX = e.touches[0].clientX;
+                    startY = e.touches[0].clientY;
+                    isScrolling = false;
+                }, { passive: true });
+                
+                container.addEventListener('touchmove', (e) => {
+                    if (!startX || !startY) return;
+                    
+                    const currentX = e.touches[0].clientX;
+                    const currentY = e.touches[0].clientY;
+                    
+                    const diffX = Math.abs(currentX - startX);
+                    const diffY = Math.abs(currentY - startY);
+                    
+                    if (diffY > diffX) {
+                        isScrolling = true;
+                    }
+                }, { passive: true });
+                
+                container.addEventListener('touchend', (e) => {
+                    if (!startX || !startY || isScrolling) return;
+                    
+                    const endX = e.changedTouches[0].clientX;
+                    const diffX = startX - endX;
+                    
+                    if (Math.abs(diffX) > 50) { // 50px以上のスワイプで切り替え
+                        if (diffX > 0) {
+                            // 左スワイプ - プレビューを表示
+                            container.classList.add('show-preview');
+                            const showPreviewBtn = document.getElementById('showPreviewBtn');
+                            const showEditorBtn = document.getElementById('showEditorBtn');
+                            if (showPreviewBtn && showEditorBtn) {
+                                showPreviewBtn.classList.add('active');
+                                showEditorBtn.classList.remove('active');
+                            }
+                        } else {
+                            // 右スワイプ - エディターを表示
+                            container.classList.remove('show-preview');
+                            const showPreviewBtn = document.getElementById('showPreviewBtn');
+                            const showEditorBtn = document.getElementById('showEditorBtn');
+                            if (showPreviewBtn && showEditorBtn) {
+                                showEditorBtn.classList.add('active');
+                                showPreviewBtn.classList.remove('active');
+                            }
+                        }
+                    }
+                    
+                    startX = 0;
+                    startY = 0;
+                }, { passive: true });
+            }
+        }
+        
+        // ファイル管理クラス
+        class FileManager {
+            constructor() {
+                this.storageKey = 'multi-document-files';
+                this.metaStorageKey = 'multi-document-meta';
+            }
+            
+            generateFileId() {
+                return 'file-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+            }
+            
+            generateFileName() {
+                const fileCount = this.getAllFiles().length;
+                return `ドキュメント${fileCount + 1}`;
+            }
+            
+            createFile(name = null) {
+                const fileId = this.generateFileId();
+                const fileName = name || this.generateFileName();
+                
+                const fileData = {
+                    id: fileId,
+                    name: fileName,
+                    content: '',
+                    createdAt: new Date().toISOString(),
+                    lastModified: new Date().toISOString()
+                };
+                
+                this.saveFile(fileId, fileData);
+                this.updateFileMeta(fileId, { name: fileName, createdAt: fileData.createdAt });
+                return fileId;
+            }
+            
+            saveFile(fileId, data) {
+                const key = `${this.storageKey}-${fileId}`;
+                const storageData = {
+                    content: data,
+                    timestamp: new Date().toISOString(),
+                    version: "1.0"
+                };
+                try {
+                    localStorage.setItem(key, JSON.stringify(storageData));
+                    return true;
+                } catch (error) {
+                    console.error('ファイル保存エラー:', error);
+                    return false;
+                }
+            }
+            
+            loadFile(fileId) {
+                const key = `${this.storageKey}-${fileId}`;
+                try {
+                    const data = localStorage.getItem(key);
+                    if (data) {
+                        const parsed = JSON.parse(data);
+                        return parsed.content;
+                    }
+                } catch (error) {
+                    console.error('ファイル読み込みエラー:', error);
+                }
+                return null;
+            }
+            
+            updateFileContent(fileId, content) {
+                const existingFile = this.loadFile(fileId);
+                if (existingFile) {
+                    const updatedFile = {
+                        ...existingFile,
+                        content: content,
+                        lastModified: new Date().toISOString()
+                    };
+                    return this.saveFile(fileId, updatedFile);
+                }
+                return false;
+            }
+            
+            deleteFile(fileId) {
+                const key = `${this.storageKey}-${fileId}`;
+                localStorage.removeItem(key);
+                this.removeFileMeta(fileId);
+            }
+            
+            renameFile(fileId, newName) {
+                const file = this.loadFile(fileId);
+                if (file) {
+                    const updatedFile = {
+                        ...file,
+                        name: newName,
+                        lastModified: new Date().toISOString()
+                    };
+                    this.saveFile(fileId, updatedFile);
+                    this.updateFileMeta(fileId, { name: newName });
+                }
+            }
+            
+            getAllFiles() {
+                const meta = this.getFilesMeta();
+                return Object.keys(meta).map(fileId => ({
+                    id: fileId,
+                    ...meta[fileId]
+                }));
+            }
+            
+            getFilesMeta() {
+                try {
+                    const data = localStorage.getItem(this.metaStorageKey);
+                    return data ? JSON.parse(data) : {};
+                } catch (error) {
+                    console.error('メタデータ読み込みエラー:', error);
+                    return {};
+                }
+            }
+            
+            updateFileMeta(fileId, meta) {
+                const allMeta = this.getFilesMeta();
+                allMeta[fileId] = { ...allMeta[fileId], ...meta };
+                try {
+                    localStorage.setItem(this.metaStorageKey, JSON.stringify(allMeta));
+                } catch (error) {
+                    console.error('メタデータ保存エラー:', error);
+                }
+            }
+            
+            removeFileMeta(fileId) {
+                const allMeta = this.getFilesMeta();
+                delete allMeta[fileId];
+                try {
+                    localStorage.setItem(this.metaStorageKey, JSON.stringify(allMeta));
+                } catch (error) {
+                    console.error('メタデータ削除エラー:', error);
+                }
+            }
+        }
+        
+        // 設定管理クラス
+        class SettingsManager {
+            constructor() {
+                this.fileSettingsKey = 'multi-document-file-settings';
+                this.globalSettingsKey = 'multi-document-global-settings';
+            }
+            
+            saveFileSettings(fileId, settings) {
+                const key = `${this.fileSettingsKey}-${fileId}`;
+                const storageData = {
+                    content: settings,
+                    timestamp: new Date().toISOString(),
+                    version: "1.0"
+                };
+                try {
+                    localStorage.setItem(key, JSON.stringify(storageData));
+                    return true;
+                } catch (error) {
+                    console.error('設定保存エラー:', error);
+                    return false;
+                }
+            }
+            
+            loadFileSettings(fileId) {
+                const key = `${this.fileSettingsKey}-${fileId}`;
+                try {
+                    const data = localStorage.getItem(key);
+                    if (data) {
+                        const parsed = JSON.parse(data);
+                        return parsed.content;
+                    }
+                } catch (error) {
+                    console.error('設定読み込みエラー:', error);
+                }
+                return {};
+            }
+            
+            saveGlobalSetting(key, value) {
+                const allSettings = this.loadGlobalSettings();
+                allSettings[key] = value;
+                try {
+                    localStorage.setItem(this.globalSettingsKey, JSON.stringify(allSettings));
+                    return true;
+                } catch (error) {
+                    console.error('グローバル設定保存エラー:', error);
+                    return false;
+                }
+            }
+            
+            loadGlobalSetting(key) {
+                const allSettings = this.loadGlobalSettings();
+                return allSettings[key];
+            }
+            
+            loadGlobalSettings() {
+                try {
+                    const data = localStorage.getItem(this.globalSettingsKey);
+                    return data ? JSON.parse(data) : {};
+                } catch (error) {
+                    console.error('グローバル設定読み込みエラー:', error);
+                    return {};
+                }
+            }
+        }
+        
+        // タブ管理クラス
+        class TabManager {
+            constructor(container, onTabClick, onTabClose, onTabRename) {
+                this.container = container;
+                this.onTabClick = onTabClick;
+                this.onTabClose = onTabClose;
+                this.onTabRename = onTabRename;
+            }
+            
+            renderTabs(files, activeFileId) {
+                this.container.innerHTML = '';
+                
+                files.forEach(file => {
+                    const tab = this.createTab(file, file.id === activeFileId);
+                    this.container.appendChild(tab);
+                });
+            }
+            
+            createTab(file, isActive) {
+                const tab = document.createElement('div');
+                tab.className = `file-tab ${isActive ? 'active' : ''}`;
+                tab.dataset.fileId = file.id;
+                
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'tab-name';
+                nameSpan.textContent = file.name;
+                
+                const closeBtn = document.createElement('button');
+                closeBtn.className = 'tab-close';
+                closeBtn.textContent = '×';
+                closeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.onTabClose(file.id);
+                });
+                
+                // タブクリックでファイル切り替え（×ボタン以外）
+                tab.addEventListener('click', (e) => {
+                    if (e.target !== closeBtn) {
+                        this.onTabClick(file.id);
+                    }
+                });
+                
+                // ダブルクリックで名前変更
+                tab.addEventListener('dblclick', (e) => {
+                    if (e.target !== closeBtn) {
+                        e.stopPropagation();
+                        this.startRenaming(nameSpan, file.id);
+                    }
+                });
+                
+                tab.appendChild(nameSpan);
+                tab.appendChild(closeBtn);
+                
+                return tab;
+            }
+            
+            startRenaming(nameSpan, fileId) {
+                const currentName = nameSpan.textContent;
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = currentName;
+                input.className = 'tab-name editing';
+                
+                const finishRenaming = () => {
+                    const newName = input.value.trim() || currentName;
+                    nameSpan.textContent = newName;
+                    nameSpan.classList.remove('editing');
+                    input.replaceWith(nameSpan);
+                    
+                    if (newName !== currentName) {
+                        this.onTabRename(fileId, newName);
+                    }
+                };
+                
+                input.addEventListener('blur', finishRenaming);
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        finishRenaming();
+                    } else if (e.key === 'Escape') {
+                        nameSpan.classList.remove('editing');
+                        input.replaceWith(nameSpan);
+                    }
+                });
+                
+                nameSpan.classList.add('editing');
+                nameSpan.replaceWith(input);
+                input.focus();
+                input.select();
+            }
+        }
+        
+        // マークダウン処理クラス
+        class MarkdownProcessor {
+            constructor() {
+                // marked.jsの設定
+                marked.setOptions({
+                    breaks: true,
+                    gfm: true,
+                    headerIds: false,
+                    mangle: false
+                });
+                
+                // Mermaidの初期化
+                mermaid.initialize({
+                    startOnLoad: false,
+                    theme: 'default',
+                    securityLevel: 'loose'
+                });
+            }
+            
+            process(markdown) {
+                try {
+                    // 改ページ記号を処理
+                    const processedMarkdown = markdown.replace(/^---$/gm, '<div class="page-break"></div>');
+                    return marked.parse(processedMarkdown);
+                } catch (error) {
+                    console.error('マークダウン処理エラー:', error);
+                    return '<p style="color: red;">マークダウンの処理中にエラーが発生しました。</p>';
+                }
+            }
+            
+            async renderMermaidDiagrams() {
+                const mermaidElements = document.querySelectorAll('#previewContent pre code.language-mermaid');
+                
+                for (let i = 0; i < mermaidElements.length; i++) {
+                    const element = mermaidElements[i];
+                    const code = element.textContent;
+                    const mermaidId = `mermaid-${Date.now()}-${i}`;
+                    
+                    try {
+                        // 新しいMermaid API（v10以降）を使用
+                        const { svg } = await mermaid.render(mermaidId, code);
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'mermaid';
+                        wrapper.innerHTML = svg;
+                        element.parentNode.replaceWith(wrapper);
+                    } catch (error) {
+                        console.error('Mermaid描画エラー:', error);
+                        const errorDiv = document.createElement('div');
+                        errorDiv.className = 'mermaid-error';
+                        errorDiv.textContent = '図表の描画に失敗しました: ' + error.message;
+                        element.parentNode.replaceWith(errorDiv);
+                    }
+                }
+            }
+        }
+        
+        // ストレージエラーハンドリングユーティリティ
+        class StorageUtils {
+            static handleStorageError(error) {
+                if (error.name === 'QuotaExceededError') {
+                    alert('ストレージ容量が不足しています。データを削除するか、ブラウザの設定を確認してください。');
+                } else if (error.name === 'SecurityError') {
+                    alert('プライベートモードではデータを保存できません。通常モードでご利用ください。');
+                } else {
+                    console.error('ストレージエラー:', error);
+                    alert('データの保存中にエラーが発生しました。');
+                }
+            }
+        }
+        
+        // CDNライブラリの読み込みエラーハンドリング
+        window.addEventListener('error', function(e) {
+            if (e.target.src && e.target.src.includes('cdn')) {
+                console.error('CDNライブラリの読み込みに失敗:', e.target.src);
+                document.getElementById('saveStatus').textContent = 'ライブラリの読み込みに失敗しました';
+                document.getElementById('saveStatus').style.color = '#e74c3c';
+            }
+        });
+        
+        // アプリケーションの開始
+        document.addEventListener('DOMContentLoaded', async () => {
+            const app = new MultiDocumentEditor();
+            await app.init();
+        });
+    </script>
+</body>
+</html>
