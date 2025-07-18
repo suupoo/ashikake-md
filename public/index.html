@@ -42,6 +42,7 @@
             --h1-font-size: 24px;
             --h2-font-size: 19px;
             --h3-font-size: 18px;
+            --text-font-size: 16px;
             --line-height: 1.7;
             --h2-margin-top: 0.5rem;
             --h2-margin-bottom: 0.1rem;
@@ -526,6 +527,7 @@
         
         #previewContent p {
             margin-bottom: 1.25rem;
+            font-size: var(--text-font-size);
         }
         
         /* 改ページ用のスタイル */
@@ -1918,6 +1920,12 @@ timeline
             </div>
             
             <div class="setting-group">
+                <label for="textFontSize">テキスト フォントサイズ</label>
+                <input type="range" id="textFontSize" class="setting-range" min="8" max="20" step="1" value="16">
+                <span class="range-value" id="textFontSizeValue">16px</span>
+            </div>
+            
+            <div class="setting-group">
                 <label for="lineHeight">行間</label>
                 <input type="range" id="lineHeight" class="setting-range" min="1.2" max="2.0" step="0.1" value="1.7">
                 <span class="range-value" id="lineHeightValue">1.7</span>
@@ -2004,6 +2012,7 @@ timeline
                     h1FontSize: 24,
                     h2FontSize: 19,
                     h3FontSize: 18,
+                    textFontSize: 16,
                     lineHeight: 1.7,
                     h2MarginTop: 0.5,
                     h2MarginBottom: 0.1,
@@ -2089,17 +2098,25 @@ timeline
                         
                         // 印刷用のHTMLを新しいウィンドウで開く
                         const printWindow = window.open('', '_blank');
-                        const printStyles = 'body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; margin: 20px; }' +
-                            'h1 { border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 20px; page-break-after: avoid; }' +
-                            'h2, h3 { page-break-after: avoid; }' +
-                            'p, li { page-break-inside: avoid; }' +
-                            'table { page-break-inside: avoid; border-collapse: collapse; }' +
-                            'th, td { border: 1px solid #ddd; padding: 8px; }' +
+                        const printStyles = 'body { font-family: system-ui, -apple-system, sans-serif !important; line-height: ' + this.currentSettings.lineHeight + ' !important; margin: 20px; max-width: 800px; }' +
+                            'h1 { border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 20px; page-break-after: avoid; font-size: ' + this.currentSettings.h1FontSize + 'px !important; }' +
+                            'h2 { page-break-after: avoid; font-size: ' + this.currentSettings.h2FontSize + 'px !important; }' +
+                            'h3 { page-break-after: avoid; font-size: ' + this.currentSettings.h3FontSize + 'px !important; }' +
+                            'p { page-break-inside: avoid; font-size: ' + this.currentSettings.textFontSize + 'px !important; line-height: ' + this.currentSettings.lineHeight + ' !important; }' +
+                            'li { page-break-inside: avoid; font-size: ' + this.currentSettings.textFontSize + 'px !important; line-height: ' + this.currentSettings.lineHeight + ' !important; }' +
+                            'div { font-size: inherit !important; line-height: inherit !important; }' +
+                            '.text-right { text-align: right !important; }' +
+                            '.text-center { text-align: center !important; }' +
+                            '.text-left { text-align: left !important; }' +
+                            'table { page-break-inside: avoid; border-collapse: collapse; width: 100%; }' +
+                            'th, td { border: 1px solid #ddd; padding: 8px; font-size: ' + this.currentSettings.textFontSize + 'px !important; }' +
                             'th { background: #f8f9fa; }' +
-                            'blockquote { background: #f8fafc; border-left: 4px solid #007aff; padding: 10px; margin: 10px 0; }' +
-                            'pre { background: #f8fafc; padding: 10px; border-radius: 4px; overflow-wrap: break-word; }' +
-                            'code { background: #f1f5f9; padding: 2px 4px; border-radius: 3px; }' +
-                            '.page-break { page-break-before: always; }';
+                            'blockquote { background: #f8fafc; border-left: 4px solid #007aff; padding: 10px; margin: 10px 0; font-size: ' + this.currentSettings.textFontSize + 'px !important; line-height: ' + this.currentSettings.lineHeight + ' !important; }' +
+                            'pre { background: #f8fafc; padding: 10px; border-radius: 4px; overflow-wrap: break-word; font-size: ' + this.currentSettings.textFontSize + 'px !important; line-height: ' + this.currentSettings.lineHeight + ' !important; }' +
+                            'code { background: #f1f5f9; padding: 2px 4px; border-radius: 3px; font-size: ' + this.currentSettings.textFontSize + 'px !important; }' +
+                            '.page-break { page-break-before: always; }' +
+                            '* { box-sizing: border-box; } ' +
+                            'div, span { width: auto; }';
                         
                         printWindow.document.open();
                         printWindow.document.write('<!DOCTYPE html><html><head><title>印刷</title><style>' + printStyles + '</style></head><body>' + previewContent.innerHTML + '</body></html>');
@@ -2326,7 +2343,7 @@ timeline
             }
             
             bindSettingsEvents() {
-                const settings = ['h1FontSize', 'h2FontSize', 'h3FontSize', 'lineHeight', 'h2MarginTop', 'h2MarginBottom', 'liMarginBottom'];
+                const settings = ['h1FontSize', 'h2FontSize', 'h3FontSize', 'textFontSize', 'lineHeight', 'h2MarginTop', 'h2MarginBottom', 'liMarginBottom'];
                 
                 settings.forEach(setting => {
                     const element = document.getElementById(setting);
@@ -2438,6 +2455,7 @@ timeline
                 root.style.setProperty('--h1-font-size', this.currentSettings.h1FontSize + 'px');
                 root.style.setProperty('--h2-font-size', this.currentSettings.h2FontSize + 'px');
                 root.style.setProperty('--h3-font-size', this.currentSettings.h3FontSize + 'px');
+                root.style.setProperty('--text-font-size', this.currentSettings.textFontSize + 'px');
                 root.style.setProperty('--line-height', this.currentSettings.lineHeight);
                 root.style.setProperty('--h2-margin-top', this.currentSettings.h2MarginTop + 'rem');
                 root.style.setProperty('--h2-margin-bottom', this.currentSettings.h2MarginBottom + 'rem');
