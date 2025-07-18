@@ -1307,35 +1307,44 @@
             }
             
             #app {
-                display: block;
+                display: block !important;
             }
             
             header, footer, .toolbar-container {
-                display: none;
+                display: none !important;
             }
             
             .editor-container {
-                display: block;
+                display: block !important;
                 padding: 0;
+                width: 100% !important;
+                height: auto !important;
             }
             
             .editor-panel {
-                display: none;
+                display: none !important;
             }
             
             .preview-panel {
+                display: block !important;
                 box-shadow: none;
                 border-radius: 0;
                 background: white;
                 border: none;
+                width: 100% !important;
+                height: auto !important;
             }
             
             .panel-title {
-                display: none;
+                display: none !important;
             }
             
             #previewContent {
+                display: block !important;
                 padding: 0;
+                width: 100% !important;
+                height: auto !important;
+                overflow: visible !important;
             }
             
             /* プレビューと同じスタイルを印刷時にも適用 */
@@ -2067,7 +2076,40 @@ timeline
                 
                 // 印刷ボタン
                 this.printBtn.addEventListener('click', () => {
-                    window.print();
+                    // 印刷前にプレビューを強制更新
+                    this.updatePreview();
+                    
+                    // 少し待ってからプレビューが更新されるのを確認
+                    setTimeout(() => {
+                        const previewContent = document.getElementById('previewContent');
+                        if (previewContent && previewContent.innerHTML.trim() === '') {
+                            alert('プレビューが空です。マークダウンテキストを入力してください。');
+                            return;
+                        }
+                        
+                        // 印刷用のHTMLを新しいウィンドウで開く
+                        const printWindow = window.open('', '_blank');
+                        const printStyles = 'body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; margin: 20px; }' +
+                            'h1 { border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 20px; page-break-after: avoid; }' +
+                            'h2, h3 { page-break-after: avoid; }' +
+                            'p, li { page-break-inside: avoid; }' +
+                            'table { page-break-inside: avoid; border-collapse: collapse; }' +
+                            'th, td { border: 1px solid #ddd; padding: 8px; }' +
+                            'th { background: #f8f9fa; }' +
+                            'blockquote { background: #f8fafc; border-left: 4px solid #007aff; padding: 10px; margin: 10px 0; }' +
+                            'pre { background: #f8fafc; padding: 10px; border-radius: 4px; overflow-wrap: break-word; }' +
+                            'code { background: #f1f5f9; padding: 2px 4px; border-radius: 3px; }' +
+                            '.page-break { page-break-before: always; }';
+                        
+                        printWindow.document.open();
+                        printWindow.document.write('<!DOCTYPE html><html><head><title>印刷</title><style>' + printStyles + '</style></head><body>' + previewContent.innerHTML + '</body></html>');
+                        printWindow.document.close();
+                        
+                        printWindow.onload = () => {
+                            printWindow.print();
+                            printWindow.close();
+                        };
+                    }, 100);
                 });
                 
                 // 改ページボタン
